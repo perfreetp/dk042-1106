@@ -61,10 +61,24 @@
   white-space: pre-wrap;
 }
 
+.sentence {
+  transition: background $transition-fast;
+
+  &:active {
+    background: rgba(124, 107, 240, 0.1);
+    border-radius: $radius-xs;
+  }
+}
+
 .usefulSentence {
-  background: rgba(255, 209, 102, 0.2);
+  background: rgba(255, 209, 102, 0.25) !important;
   border-radius: $radius-xs;
   padding: 2rpx 6rpx;
+  margin: 0 2rpx;
+}
+
+.paragraphBreak {
+  height: $spacing-md;
 }
 
 .actions {
@@ -107,4 +121,63 @@
   margin-left: auto;
   color: $color-mint;
   font-weight: $font-weight-medium;
+}
+
+.followUpBtn {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.followUps {
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx dashed $color-divider;
+}
+
+.followUpTitle {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+  display: block;
+}
+
+.followUpItem {
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-sm;
+}
+
+.followUpHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-xs;
+}
+
+.followUpAuthor {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-primary;
+}
+
+.followUpName {
+  font-weight: $font-weight-regular;
+  color: $color-text-secondary;
+}
+
+.followUpTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.followUpContent {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  line-height: $line-height-normal;
 }

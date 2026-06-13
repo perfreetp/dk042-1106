@@ -33,7 +33,7 @@ export interface Reply {
   usefulSentences: string[];
   isVoice: boolean;
   voiceUrl?: string;
-  followUp?: FollowUp;
+  followUps: FollowUp[];
 }
 
 export interface FollowUp {
@@ -41,6 +41,7 @@ export interface FollowUp {
   content: string;
   createdAt: string;
   isFromOwner: boolean;
+  authorName: string;
 }
 
 export interface ActionItem {

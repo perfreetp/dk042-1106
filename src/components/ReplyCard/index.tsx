@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text } from '@tarojs/components';
 import classnames from 'classnames';
 import styles from './index.module.scss';
-import { Reply } from '@/types';
+import { Reply, FollowUp } from '@/types';
 import { formatTime } from '@/utils';
 import { useApp } from '@/store/AppContext';
 
@@ -10,9 +10,17 @@ interface ReplyCardProps {
   reply: Reply;
   troubleId: string;
   showRating?: boolean;
+  showFollowUpButton?: boolean;
+  onFollowUp?: (replyId: string) => void;
 }
 
-const ReplyCard: React.FC<ReplyCardProps> = ({ reply, troubleId, showRating = true }) => {
+const ReplyCard: React.FC<ReplyCardProps> = ({
+  reply,
+  troubleId,
+  showRating = true,
+  showFollowUpButton = false,
+  onFollowUp,
+}) => {
   const { rateReply, markUseful } = useApp();
   const [localRating, setLocalRating] = useState(reply.rating || 0);
   const [showThanked, setShowThanked] = useState(false);
@@ -25,21 +33,42 @@ const ReplyCard: React.FC<ReplyCardProps> = ({ reply, troubleId, showRating = tr
     }
   };
 
-  const handleMarkUseful = (sentence: string) => {
+  const handleMarkUseful = (e: any, sentence: string) => {
+    e.stopPropagation();
     markUseful(troubleId, reply.id, sentence);
   };
 
+  const splitSentences = (content: string): string[] => {
+    const parts: string[] = [];
+    const paragraphs = content.split('\n\n');
+    paragraphs.forEach((para, pIdx) => {
+      const sentences = para.split(/(?<=[。！？.!?])/g);
+      sentences.forEach((sent, sIdx) => {
+        if (sent.trim()) {
+          parts.push(sent.trim());
+        }
+      });
+      if (pIdx < paragraphs.length - 1) {
+        parts.push('\n\n');
+      }
+    });
+    return parts;
+  };
+
   const renderContent = () => {
-    const sentences = reply.content.split(/(?<=[。！？.!?])\s*/);
-    return sentences.map((sentence, idx) => {
-      const isUseful = reply.usefulSentences.includes(sentence);
+    const parts = splitSentences(reply.content);
+    return parts.map((part, idx) => {
+      if (part === '\n\n') {
+        return <View key={idx} className={styles.paragraphBreak} />;
+      }
+      const isUseful = reply.usefulSentences.includes(part);
       return (
         <Text
           key={idx}
-          className={isUseful ? styles.usefulSentence : ''}
-          onClick={() => handleMarkUseful(sentence)}
+          className={classnames(styles.sentence, isUseful && styles.usefulSentence)}
+          onClick={(e) => handleMarkUseful(e, part)}
         >
-          {sentence}
+          {part}
         </Text>
       );
     });
@@ -73,7 +102,7 @@ const ReplyCard: React.FC<ReplyCardProps> = ({ reply, troubleId, showRating = tr
       </View>
 
       <View className={styles.content}>
-        {reply.usefulSentences.length > 0 ? renderContent() : reply.content}
+        {renderContent()}
       </View>
 
       <View className={styles.actions}>
@@ -98,7 +127,30 @@ const ReplyCard: React.FC<ReplyCardProps> = ({ reply, troubleId, showRating = tr
           <Text>有用 {reply.usefulSentences.length}</Text>
         </View>
         {showThanked && <Text className={styles.thanks}>已感谢 ♡</Text>}
+        {showFollowUpButton && (
+          <Text className={styles.followUpBtn} onClick={() => onFollowUp?.(reply.id)}>
+            发起回访
+          </Text>
+        )}
       </View>
+
+      {reply.followUps && reply.followUps.length > 0 && (
+        <View className={styles.followUps}>
+          <Text className={styles.followUpTitle}>💬 回访记录</Text>
+          {reply.followUps.map((fu: FollowUp) => (
+            <View key={fu.id} className={styles.followUpItem}>
+              <View className={styles.followUpHeader}>
+                <Text className={styles.followUpAuthor}>
+                  {fu.isFromOwner ? '📝 楼主回复' : '💭 对方回复'}
+                  <Text className={styles.followUpName}> · {fu.authorName}</Text>
+                </Text>
+                <Text className={styles.followUpTime}>{formatTime(fu.createdAt)}</Text>
+              </View>
+              <Text className={styles.followUpContent}>{fu.content}</Text>
+            </View>
+          ))}
+        </View>
+      )}
     </View>
   );
 };

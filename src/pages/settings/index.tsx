@@ -1,12 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
 import { useApp } from '@/store/AppContext';
+import { mockTroubles, mockMyTroubles } from '@/data/mockData';
 
 const SettingsPage: React.FC = () => {
-  const { user, toggleMatching } = useApp();
+  const { user, toggleMatching, unblockUser, troubles, myTroubles } = useApp();
+  const [showBlockedList, setShowBlockedList] = useState(false);
+
+  const getBlockedUserNames = () => {
+    const allTroubles = [...mockTroubles, ...mockMyTroubles, ...troubles, ...myTroubles];
+    const userMap: Record<string, string> = {};
+    allTroubles.forEach(t => {
+      userMap[t.authorId] = t.authorName;
+    });
+    return user.blockedUsers.map(uid => ({
+      id: uid,
+      name: userMap[uid] || `用户 ${uid.slice(-6)}`,
+    }));
+  };
 
   const handleClearCache = () => {
     Taro.showModal({
@@ -14,6 +28,7 @@ const SettingsPage: React.FC = () => {
       content: '确定要清除本地缓存吗？草稿和设置不会被清除。',
       success: (res) => {
         if (res.confirm) {
+          Taro.clearStorageSync();
           Taro.showToast({ title: '已清除', icon: 'success' });
         }
       },
@@ -31,6 +46,21 @@ const SettingsPage: React.FC = () => {
       showCancel: false,
     });
   };
+
+  const handleUnblock = (userId: string, userName: string) => {
+    Taro.showModal({
+      title: '解除屏蔽',
+      content: `确定要解除对「${userName}」的屏蔽吗？解除后将再次收到对方的烦恼。`,
+      success: (res) => {
+        if (res.confirm) {
+          unblockUser(userId);
+          Taro.showToast({ title: '已解除屏蔽', icon: 'success' });
+        }
+      },
+    });
+  };
+
+  const blockedUsers = getBlockedUserNames();
 
   return (
     <ScrollView className={styles.page} scrollY>
@@ -64,32 +94,45 @@ const SettingsPage: React.FC = () => {
 
       <View className={styles.section}>
         <Text className={styles.sectionTitle}>隐私与安全</Text>
-        <View className={styles.item}>
+        <View
+          className={classnames(styles.item, showBlockedList && styles.itemActive)}
+          onClick={() => setShowBlockedList(!showBlockedList)}
+        >
           <View className={styles.itemIcon} style={{ background: 'rgba(255, 139, 167, 0.12)' }}>
             🚫
           </View>
           <View style={{ flex: 1 }}>
             <Text className={styles.itemText}>屏蔽的用户</Text>
             <Text className={styles.itemDesc}>
-              {user.blockedUsers.length > 0 ? `已屏蔽 ${user.blockedUsers.length} 人` : '暂无屏蔽用户'}
+              {blockedUsers.length > 0 ? `已屏蔽 ${blockedUsers.length} 人` : '暂无屏蔽用户'}
             </Text>
           </View>
-          <Text className={styles.itemArrow}>›</Text>
+          <Text className={classnames(styles.itemArrow, showBlockedList && styles.itemArrowOpen)}>›</Text>
         </View>
 
-        {user.blockedUsers.length > 0 && (
+        {showBlockedList && blockedUsers.length > 0 && (
           <View className={styles.blockedList}>
-            {user.blockedUsers.map((uid, idx) => (
-              <View key={idx} className={styles.blockedItem}>
-                <Text className={styles.blockedName}>用户 {uid.slice(0, 8)}</Text>
+            {blockedUsers.map((u) => (
+              <View key={u.id} className={styles.blockedItem}>
+                <View className={styles.blockedAvatar}>
+                  <Text className={styles.blockedAvatarText}>{u.name.charAt(0)}</Text>
+                </View>
+                <Text className={styles.blockedName}>{u.name}</Text>
                 <View
                   className={styles.unblockBtn}
-                  onClick={() => Taro.showToast({ title: '已解除屏蔽', icon: 'success' })}
+                  onClick={() => handleUnblock(u.id, u.name)}
                 >
-                  解除
+                  解除屏蔽
                 </View>
               </View>
             ))}
+          </View>
+        )}
+
+        {showBlockedList && blockedUsers.length === 0 && (
+          <View className={styles.emptyBlocked}>
+            <Text className={styles.emptyBlockedIcon}>✨</Text>
+            <Text className={styles.emptyBlockedText}>当前没有屏蔽任何人</Text>
           </View>
         )}
 

@@ -1,18 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView } from '@tarojs/components';
+import { View, Text, ScrollView, Input, Button } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
 import ReplyCard from '@/components/ReplyCard';
 import { useApp } from '@/store/AppContext';
-import { Trouble } from '@/types';
-import { formatTime, formatDeadline, getMoodColor, getMoodLabel, getThemeColor } from '@/utils';
+import { Trouble, FollowUp } from '@/types';
+import { formatTime, formatDeadline, getMoodColor, getMoodLabel, getThemeColor, generateId } from '@/utils';
 
 const DetailPage: React.FC = () => {
   const router = useRouter();
   const troubleId = router.params.id as string;
-  const { troubles, myTroubles, user, addAction } = useApp();
+  const { troubles, myTroubles, user, addAction, blockUser, addFollowUp } = useApp();
   const [trouble, setTrouble] = useState<Trouble | null>(null);
+  const [showFollowUpModal, setShowFollowUpModal] = useState(false);
+  const [followUpContent, setFollowUpContent] = useState('');
+  const [targetReplyId, setTargetReplyId] = useState<string | null>(null);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reportWithBlock, setReportWithBlock] = useState(false);
 
   useEffect(() => {
     const allTroubles = [...troubles, ...myTroubles];
@@ -53,20 +59,51 @@ const DetailPage: React.FC = () => {
     }, 1000);
   };
 
-  const handleFollowUp = () => {
-    Taro.showToast({ title: '回访功能开发中', icon: 'none' });
+  const handleOpenFollowUp = (replyId: string) => {
+    setTargetReplyId(replyId);
+    setFollowUpContent('');
+    setShowFollowUpModal(true);
   };
 
-  const handleReport = () => {
-    Taro.showActionSheet({
-      itemList: ['举报内容不当', '屏蔽该用户', '取消'],
-      success: (res) => {
-        if (res.tapIndex === 0) {
-          Taro.showToast({ title: '已提交举报', icon: 'success' });
-        } else if (res.tapIndex === 1) {
-          Taro.showToast({ title: '已屏蔽该用户', icon: 'success' });
-        }
-      },
+  const handleSubmitFollowUp = () => {
+    if (!trouble || !targetReplyId) return;
+    if (!followUpContent.trim()) {
+      Taro.showToast({ title: '请输入回访内容', icon: 'none' });
+      return;
+    }
+
+    const followUp: FollowUp = {
+      id: `fu_${generateId()}`,
+      content: followUpContent.trim(),
+      createdAt: new Date().toISOString(),
+      isFromOwner: true,
+      authorName: user.name,
+    };
+
+    addFollowUp(trouble.id, targetReplyId, followUp);
+    setShowFollowUpModal(false);
+    setFollowUpContent('');
+    setTargetReplyId(null);
+    Taro.showToast({ title: '回访已发送', icon: 'success' });
+  };
+
+  const handleOpenReport = () => {
+    setReportReason('');
+    setReportWithBlock(false);
+    setShowReportModal(true);
+  };
+
+  const handleSubmitReport = () => {
+    if (!trouble) return;
+
+    if (reportWithBlock) {
+      blockUser(trouble.authorId);
+    }
+
+    setShowReportModal(false);
+    Taro.showToast({
+      title: reportWithBlock ? '已提交举报并屏蔽' : '已提交举报',
+      icon: 'success',
     });
   };
 
@@ -145,9 +182,6 @@ const DetailPage: React.FC = () => {
             <View className={styles.actionBtn} onClick={handleConvertToActions}>
               📋 转为行动清单
             </View>
-            <View className={styles.actionBtn} onClick={handleFollowUp}>
-              💬 发起回访
-            </View>
           </View>
         )}
 
@@ -159,7 +193,7 @@ const DetailPage: React.FC = () => {
             >
               💝 我想回应
             </View>
-            <View className={styles.actionBtn} onClick={handleReport}>
+            <View className={styles.actionBtn} onClick={handleOpenReport}>
               ⚠️ 举报
             </View>
           </View>
@@ -193,10 +227,108 @@ const DetailPage: React.FC = () => {
               reply={reply}
               troubleId={trouble.id}
               showRating={isMine}
+              showFollowUpButton={isMine}
+              onFollowUp={handleOpenFollowUp}
             />
           ))
         )}
       </View>
+
+      {showFollowUpModal && (
+        <View className={styles.modalOverlay}>
+          <View className={styles.modal}>
+            <View className={styles.modalHeader}>
+              <Text className={styles.modalTitle}>💬 发起回访</Text>
+              <Text
+                className={styles.modalClose}
+                onClick={() => setShowFollowUpModal(false)}
+              >
+                ✕
+              </Text>
+            </View>
+            <View className={styles.modalBody}>
+              <Text className={styles.modalLabel}>写下你的追问或近况更新：</Text>
+              <Input
+                className={styles.modalInput}
+                placeholder="例如：谢谢你的建议，我和他谈过了..."
+                value={followUpContent}
+                onInput={(e) => setFollowUpContent(e.detail.value)}
+                maxlength={200}
+              />
+              <Text className={styles.modalCounter}>{followUpContent.length}/200</Text>
+            </View>
+            <View className={styles.modalFooter}>
+              <Button className={styles.modalBtnCancel} onClick={() => setShowFollowUpModal(false)}>
+                取消
+              </Button>
+              <Button
+                className={styles.modalBtnConfirm}
+                onClick={handleSubmitFollowUp}
+                disabled={!followUpContent.trim()}
+              >
+                发送回访
+              </Button>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {showReportModal && (
+        <View className={styles.modalOverlay}>
+          <View className={styles.modal}>
+            <View className={styles.modalHeader}>
+              <Text className={styles.modalTitle}>⚠️ 举报与屏蔽</Text>
+              <Text
+                className={styles.modalClose}
+                onClick={() => setShowReportModal(false)}
+              >
+                ✕
+              </Text>
+            </View>
+            <View className={styles.modalBody}>
+              <Text className={styles.modalLabel}>请选择举报原因：</Text>
+              <View className={styles.reportOptions}>
+                {['内容不当', '骚扰/辱骂', '广告垃圾', '虚假信息', '其他'].map(reason => (
+                  <View
+                    key={reason}
+                    className={classnames(
+                      styles.reportOption,
+                      reportReason === reason && styles.reportOptionActive
+                    )}
+                    onClick={() => setReportReason(reason)}
+                  >
+                    <Text>{reportReason === reason ? '✓ ' : ''}{reason}</Text>
+                  </View>
+                ))}
+              </View>
+              <View className={styles.blockOption}>
+                <View
+                  className={classnames(
+                    styles.checkbox,
+                    reportWithBlock && styles.checkboxChecked
+                  )}
+                  onClick={() => setReportWithBlock(!reportWithBlock)}
+                >
+                  {reportWithBlock && <Text>✓</Text>}
+                </View>
+                <Text className={styles.blockText}>同时屏蔽该用户（不再收到其烦恼）</Text>
+              </View>
+            </View>
+            <View className={styles.modalFooter}>
+              <Button className={styles.modalBtnCancel} onClick={() => setShowReportModal(false)}>
+                取消
+              </Button>
+              <Button
+                className={styles.modalBtnConfirm}
+                onClick={handleSubmitReport}
+                disabled={!reportReason}
+              >
+                提交
+              </Button>
+            </View>
+          </View>
+        </View>
+      )}
     </ScrollView>
   );
 };

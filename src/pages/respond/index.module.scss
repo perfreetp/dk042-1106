@@ -193,17 +193,32 @@
   border-radius: $radius-md;
   padding: $spacing-md;
   margin-bottom: $spacing-sm;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  border: 2rpx solid transparent;
+  transition: all $transition-fast;
+}
+
+.draftItemActive {
+  background: $color-primary-bg;
+  border-color: $color-primary;
+
+  .draftContent {
+    color: $color-primary;
+    font-weight: $font-weight-medium;
+  }
 }
 
 .draftContent {
-  flex: 1;
   font-size: $font-size-sm;
   color: $color-text-secondary;
   @include text-ellipsis-multi(1);
-  margin-right: $spacing-md;
+  margin-bottom: $spacing-xs;
+  display: block;
+}
+
+.draftMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .draftTime {
@@ -215,7 +230,6 @@
 .draftDelete {
   font-size: $font-size-sm;
   color: $color-error;
-  margin-left: $spacing-md;
 }
 
 .footer {

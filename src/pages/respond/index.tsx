@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Textarea } from '@tarojs/components';
-import Taro, { useRouter } from '@tarojs/taro';
+import Taro, { useRouter, useDidShow, useDidHide } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
 import { useApp } from '@/store/AppContext';
-import { ToneType, Trouble } from '@/types';
+import { ToneType, Trouble, Draft } from '@/types';
 import { generateId, formatTime } from '@/utils';
 
 const prompts = [
@@ -21,20 +21,99 @@ const tones: { key: ToneType; desc: string; color: string; bg: string }[] = [
   { key: '真诚倾听', desc: '专注倾听不急于给建议', color: '#67D5B5', bg: 'rgba(103, 213, 181, 0.12)' },
 ];
 
+const STORAGE_DRAFT_PREFIX = 'respond_draft_';
+
 const RespondPage: React.FC = () => {
   const router = useRouter();
   const troubleId = router.params.id as string;
-  const { troubles, myTroubles, user, addReply, drafts, saveDraft, deleteDraft } = useApp();
+  const { troubles, myTroubles, user, addReply, drafts, saveDraft, deleteDraft, deleteDraftByTroubleId } = useApp();
   const [trouble, setTrouble] = useState<Trouble | null>(null);
   const [content, setContent] = useState('');
   const [tone, setTone] = useState<ToneType>('温暖共情');
   const [activePrompts, setActivePrompts] = useState<number[]>([]);
+  const [hasAutoLoaded, setHasAutoLoaded] = useState(false);
+  const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
+  const initialLoadDone = useRef(false);
 
   useEffect(() => {
     const all = [...troubles, ...myTroubles];
     const found = all.find(t => t.id === troubleId);
     if (found) setTrouble(found);
   }, [troubleId, troubles, myTroubles]);
+
+  const loadDraftFromStorage = () => {
+    try {
+      const stored = Taro.getStorageSync(STORAGE_DRAFT_PREFIX + troubleId);
+      if (stored) {
+        const draftData = JSON.parse(stored);
+        setContent(draftData.content || '');
+        setTone(draftData.tone || '温暖共情');
+        setActivePrompts(draftData.activePrompts || []);
+        setCurrentDraftId(draftData.id || null);
+        return true;
+      }
+    } catch (e) {
+      console.error('[Respond] Failed to load draft from storage:', e);
+    }
+    return false;
+  };
+
+  const saveDraftToStorage = () => {
+    if (!content.trim()) return;
+    try {
+      const draftData = {
+        id: currentDraftId || `temp_${Date.now()}`,
+        troubleId,
+        content: content.trim(),
+        tone,
+        activePrompts,
+        savedAt: new Date().toISOString(),
+      };
+      Taro.setStorageSync(STORAGE_DRAFT_PREFIX + troubleId, JSON.stringify(draftData));
+    } catch (e) {
+      console.error('[Respond] Failed to save draft to storage:', e);
+    }
+  };
+
+  const clearDraftFromStorage = () => {
+    try {
+      Taro.removeStorageSync(STORAGE_DRAFT_PREFIX + troubleId);
+    } catch (e) {
+      console.error('[Respond] Failed to clear draft from storage:', e);
+    }
+  };
+
+  useDidShow(() => {
+    if (!initialLoadDone.current) {
+      initialLoadDone.current = true;
+      const loaded = loadDraftFromStorage();
+      if (!loaded) {
+        const myDrafts = drafts.filter(d => d.troubleId === troubleId);
+        if (myDrafts.length > 0) {
+          const latest = myDrafts[0];
+          setContent(latest.content);
+          setTone(latest.tone);
+          setCurrentDraftId(latest.id);
+        }
+      }
+      setHasAutoLoaded(true);
+    }
+  });
+
+  useDidHide(() => {
+    if (content.trim()) {
+      saveDraftToStorage();
+    }
+  });
+
+  useEffect(() => {
+    if (hasAutoLoaded && content.trim()) {
+      const timer = setTimeout(() => {
+        saveDraftToStorage();
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [content, tone, activePrompts, hasAutoLoaded]);
 
   const myDrafts = drafts.filter(d => d.troubleId === troubleId);
 
@@ -57,14 +136,17 @@ const RespondPage: React.FC = () => {
       Taro.showToast({ title: '内容不能为空', icon: 'none' });
       return;
     }
+    const draftId = currentDraftId || generateId();
     saveDraft({
-      id: `draft_${Date.now()}`,
+      id: draftId,
       troubleId,
       content: content.trim(),
       tone,
       sections: activePrompts.map(i => prompts[i].text),
       savedAt: new Date().toISOString(),
     });
+    setCurrentDraftId(draftId);
+    saveDraftToStorage();
     Taro.showToast({ title: '已保存草稿', icon: 'success' });
   };
 
@@ -73,6 +155,8 @@ const RespondPage: React.FC = () => {
     if (draft) {
       setContent(draft.content);
       setTone(draft.tone);
+      setCurrentDraftId(draft.id);
+      saveDraftToStorage();
       Taro.showToast({ title: '已载入草稿', icon: 'success' });
     }
   };
@@ -84,6 +168,10 @@ const RespondPage: React.FC = () => {
       success: (res) => {
         if (res.confirm) {
           deleteDraft(draftId);
+          if (currentDraftId === draftId) {
+            setCurrentDraftId(null);
+            clearDraftFromStorage();
+          }
           Taro.showToast({ title: '已删除', icon: 'success' });
         }
       },
@@ -119,8 +207,12 @@ const RespondPage: React.FC = () => {
       authorName: user.name,
       usefulSentences: [],
       isVoice: false,
+      followUps: [],
     };
     addReply(troubleId, newReply);
+    deleteDraftByTroubleId(troubleId);
+    clearDraftFromStorage();
+    setCurrentDraftId(null);
     Taro.showToast({ title: '回应已发送', icon: 'success' });
     setTimeout(() => {
       Taro.navigateBack();
@@ -140,22 +232,29 @@ const RespondPage: React.FC = () => {
 
       {myDrafts.length > 0 && (
         <View className={styles.draftsSection}>
-          <Text className={styles.draftsTitle}>我的草稿（{myDrafts.length}）</Text>
+          <Text className={styles.draftsTitle}>
+            📝 我的草稿（{myDrafts.length}）{hasAutoLoaded && currentDraftId ? '· 已自动加载' : ''}
+          </Text>
           {myDrafts.map(draft => (
-            <View key={draft.id} className={styles.draftItem}>
+            <View
+              key={draft.id}
+              className={classnames(styles.draftItem, currentDraftId === draft.id && styles.draftItemActive)}
+            >
               <Text
                 className={styles.draftContent}
                 onClick={() => handleLoadDraft(draft.id)}
               >
-                {draft.content}
+                {draft.content.slice(0, 60)}{draft.content.length > 60 ? '...' : ''}
               </Text>
-              <Text className={styles.draftTime}>{formatTime(draft.savedAt)}</Text>
-              <Text
-                className={styles.draftDelete}
-                onClick={() => handleDeleteDraft(draft.id)}
-              >
-                删除
-              </Text>
+              <View className={styles.draftMeta}>
+                <Text className={styles.draftTime}>{formatTime(draft.savedAt)}</Text>
+                <Text
+                  className={styles.draftDelete}
+                  onClick={() => handleDeleteDraft(draft.id)}
+                >
+                  删除
+                </Text>
+              </View>
             </View>
           ))}
         </View>

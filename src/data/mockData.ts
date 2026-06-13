@@ -69,6 +69,7 @@ export const mockTroubles: Trouble[] = [
         rating: 5,
         usefulSentences: ['其实感情都会经历这样的阶段', '用"我觉得"而不是"你总是"的方式表达'],
         isVoice: false,
+        followUps: [],
       },
     ],
   },
@@ -130,6 +131,7 @@ export const mockTroubles: Trouble[] = [
         rating: 4,
         usefulSentences: ['试试478呼吸法'],
         isVoice: false,
+        followUps: [],
       },
     ],
   },
@@ -209,6 +211,7 @@ export const mockMyTroubles: Trouble[] = [
         authorName: '路过的风',
         usefulSentences: [],
         isVoice: false,
+        followUps: [],
       },
     ],
   },
@@ -225,6 +228,7 @@ export const mockReplies: Reply[] = [
     authorName: '小暖',
     usefulSentences: [],
     isVoice: false,
+    followUps: [],
   },
 ];
 
