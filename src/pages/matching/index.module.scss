@@ -1,0 +1,171 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 48rpx;
+}
+
+.header {
+  padding: $spacing-lg $page-padding;
+  background: linear-gradient(135deg, rgba(103, 213, 181, 0.1) 0%, rgba(124, 107, 240, 0.08) 100%);
+}
+
+.title {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.subtitle {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.modeTabs {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-lg;
+  background: $color-bg-card;
+  padding: 8rpx;
+  border-radius: $radius-button;
+}
+
+.modeTab {
+  flex: 1;
+  padding: 20rpx 16rpx;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  text-align: center;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.modeTabActive {
+  background: linear-gradient(135deg, $color-primary 0%, $color-mint 100%);
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.modeDesc {
+  margin-top: $spacing-md;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  text-align: center;
+}
+
+.content {
+  padding: $spacing-md $page-padding;
+}
+
+.cardContainer {
+  position: relative;
+  perspective: 1000px;
+  margin-top: $spacing-lg;
+}
+
+.pausedOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: $radius-xl;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.pausedIcon {
+  font-size: 80rpx;
+  margin-bottom: $spacing-md;
+}
+
+.pausedText {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-md;
+}
+
+.resumeBtn {
+  padding: 20rpx 48rpx;
+  background: $color-primary;
+  color: $color-text-white;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+}
+
+.actionRow {
+  display: flex;
+  justify-content: center;
+  gap: $spacing-xl;
+  margin-top: $spacing-xl;
+}
+
+.actionBtn {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.9);
+  }
+}
+
+.skipBtn {
+  background: $color-bg-card;
+}
+
+.acceptBtn {
+  background: linear-gradient(135deg, $color-primary 0%, $color-mint 100%);
+}
+
+.actionIcon {
+  font-size: 56rpx;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 0;
+}
+
+.emptyIcon {
+  font-size: 80rpx;
+  margin-bottom: $spacing-md;
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-sm;
+}
+
+.emptyHint {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.refreshHint {
+  text-align: center;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-lg;
+}

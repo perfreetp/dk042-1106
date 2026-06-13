@@ -1,0 +1,270 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 200rpx;
+}
+
+.troublePreview {
+  margin: $spacing-md $page-padding;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.previewLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-sm;
+}
+
+.previewContent {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-loose;
+  @include text-ellipsis-multi(3);
+}
+
+.section {
+  margin: $spacing-md $page-padding;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.sectionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.promptList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.promptItem {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+  background: $color-bg-soft;
+  border-radius: $radius-md;
+  transition: all $transition-base;
+
+  &:active {
+    background: $color-primary-bg;
+  }
+}
+
+.promptIcon {
+  font-size: 32rpx;
+  flex-shrink: 0;
+}
+
+.promptText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+}
+
+.promptActive {
+  background: $color-primary-bg;
+  border: 2rpx solid $color-primary;
+
+  .promptText {
+    color: $color-primary;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.toneOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.toneOption {
+  padding: 16rpx 28rpx;
+  border-radius: $radius-button;
+  background: $color-bg-soft;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.toneOptionActive {
+  background: $color-primary;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.toneDesc {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-sm;
+}
+
+.editorArea {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin: $spacing-md $page-padding;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.textarea {
+  width: 100%;
+  min-height: 400rpx;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  line-height: $line-height-loose;
+  box-sizing: border-box;
+}
+
+.charCount {
+  text-align: right;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-sm;
+}
+
+.checkList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.checkItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm 0;
+}
+
+.checkIcon {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  flex-shrink: 0;
+}
+
+.checkPass {
+  background: rgba(103, 213, 181, 0.15);
+  color: $color-mint;
+}
+
+.checkWarn {
+  background: rgba(255, 209, 102, 0.2);
+  color: $color-warning;
+}
+
+.checkText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.draftsSection {
+  margin: $spacing-md $page-padding;
+}
+
+.draftsTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.draftItem {
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-sm;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.draftContent {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  @include text-ellipsis-multi(1);
+  margin-right: $spacing-md;
+}
+
+.draftTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  white-space: nowrap;
+}
+
+.draftDelete {
+  font-size: $font-size-sm;
+  color: $color-error;
+  margin-left: $spacing-md;
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc($spacing-md + env(safe-area-inset-bottom));
+  background: $color-bg-card;
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
+  display: flex;
+  gap: $spacing-md;
+}
+
+.footerBtn {
+  flex: 1;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-md;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.footerBtnSecondary {
+  background: $color-bg-soft;
+  color: $color-text-secondary;
+}
+
+.footerBtnOutline {
+  background: transparent;
+  border: 2rpx solid $color-primary;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.footerBtnPrimary {
+  flex: 2;
+  background: linear-gradient(135deg, $color-primary 0%, $color-mint 100%);
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}
+
+.footerBtnDisabled {
+  opacity: 0.5;
+}

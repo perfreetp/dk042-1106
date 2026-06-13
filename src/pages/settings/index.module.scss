@@ -1,0 +1,153 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 48rpx;
+}
+
+.section {
+  margin: $spacing-md $page-padding;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.sectionTitle {
+  padding: $spacing-md $spacing-lg 0;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  text-transform: uppercase;
+  letter-spacing: 1rpx;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  padding: $spacing-lg;
+  border-bottom: 1rpx solid $color-divider;
+  transition: all $transition-fast;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:active {
+    background: $color-bg-hover;
+  }
+}
+
+.itemIcon {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: $radius-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  margin-right: $spacing-md;
+  background: $color-primary-bg;
+}
+
+.itemText {
+  flex: 1;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}
+
+.itemDesc {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+.itemArrow {
+  font-size: $font-size-lg;
+  color: $color-text-tertiary;
+}
+
+.switch {
+  width: 96rpx;
+  height: 56rpx;
+  border-radius: $radius-round;
+  background: $color-border;
+  position: relative;
+  transition: all $transition-base;
+}
+
+.switchOn {
+  background: $color-primary;
+}
+
+.switchDot {
+  position: absolute;
+  top: 6rpx;
+  left: 6rpx;
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: $radius-round;
+  background: $color-bg-card;
+  transition: all $transition-base;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.switchOn .switchDot {
+  left: 46rpx;
+}
+
+.pausedCard {
+  margin: $spacing-md $page-padding;
+  padding: $spacing-lg;
+  background: linear-gradient(135deg, rgba(255, 209, 102, 0.15) 0%, rgba(255, 139, 167, 0.1) 100%);
+  border-radius: $radius-lg;
+}
+
+.pausedTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.pausedDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+}
+
+.blockedList {
+  padding: $spacing-sm 0;
+}
+
+.blockedItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md $spacing-lg;
+}
+
+.blockedName {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}
+
+.unblockBtn {
+  font-size: $font-size-sm;
+  color: $color-error;
+  padding: 8rpx 20rpx;
+  border-radius: $radius-button;
+  background: rgba(255, 107, 138, 0.1);
+}
+
+.emptyBlocked {
+  padding: $spacing-lg;
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.dangerItem {
+  color: $color-error;
+  justify-content: center;
+}
